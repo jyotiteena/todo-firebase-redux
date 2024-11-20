@@ -1,34 +1,36 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import axios from 'axios';
-
-const API_URL = 'http://localhost:5000/todo'; // Replace with your API URL
+import { db } from '../../firebase';
+import { collection, addDoc, getDocs, updateDoc, deleteDoc, doc } from 'firebase/firestore';
 
 const initialState = {
-    todos: []
+    todos: [],
+    status: 'idle',
+    error: null
 };
 
-// Fetch Todos
 export const fetchTodos = createAsyncThunk('todos/fetchTodos', async () => {
-    const response = await axios.get(API_URL);
-    return response.data;
+    const querySnapshot = await getDocs(collection(db, 'todos'));
+    let todos = [];
+    querySnapshot.forEach((doc) => {
+        todos.push({ id: doc.id, ...doc.data() });
+    });
+    return todos;
 });
 
-// Add Todo
 export const addTodo = createAsyncThunk('todos/addTodo', async (newTodo) => {
-    const response = await axios.post(API_URL, newTodo);
-    return response.data; // Assuming the response contains the added todo
+    const docRef = await addDoc(collection(db, 'todos'), newTodo);
+    return { id: docRef.id, ...newTodo };
 });
 
-// Update Todo
 export const updateTodo = createAsyncThunk('todos/updateTodo', async (updatedTodo) => {
-    const response = await axios.put(`${API_URL}/${updatedTodo.id}`, updatedTodo);
-    return response.data; // Assuming the response contains the updated todo
+    const todoRef = doc(db, 'todos', updatedTodo.id);
+    await updateDoc(todoRef, updatedTodo);
+    return updatedTodo;
 });
 
-// Delete Todo
 export const deleteTodo = createAsyncThunk('todos/deleteTodo', async (id) => {
-    await axios.delete(`${API_URL}/${id}`);
-    return id; // Returning the id to filter the deleted todo from the state
+    await deleteDoc(doc(db, 'todos', id));
+    return id;
 });
 
 const todoSlice = createSlice({
@@ -45,9 +47,7 @@ const todoSlice = createSlice({
             })
             .addCase(updateTodo.fulfilled, (state, action) => {
                 const index = state.todos.findIndex(todo => todo.id === action.payload.id);
-                if (index !== -1) {
-                    state.todos[index] = action.payload;
-                }
+                state.todos[index] = action.payload;
             })
             .addCase(deleteTodo.fulfilled, (state, action) => {
                 state.todos = state.todos.filter(todo => todo.id !== action.payload);

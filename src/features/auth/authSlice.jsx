@@ -4,7 +4,6 @@ import { auth } from '../../firebase';
 
 const initialState = {
     user: null,
-    status: 'idle',
     error: null,
 };
 

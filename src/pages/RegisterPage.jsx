@@ -8,8 +8,10 @@ const RegisterPage = () => {
     const dispatch = useDispatch();
     const { register, handleSubmit, formState: { errors } } = useForm();
     const signupForm = (data) => {
-        dispatch(registerUser(data.email, data.password));
-        navigate('/login');
+        const res = dispatch(registerUser(data.email, data.password));
+        if(res){
+            navigate('/login');
+        }
     };
 
     return (

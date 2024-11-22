@@ -13,7 +13,7 @@ const SignOut = () => {
             await signOut(auth);
             dispatch(clearUser());
             await persistor.purge();
-            console.log('Signed out successfully.');
+            alert('Signed out successfully.');
         } catch (error) {
             console.error('Error signing out:', error);
         }

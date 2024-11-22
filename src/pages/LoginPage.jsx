@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { loginUser, clearError } from '../features/auth/authSlice';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
@@ -8,7 +8,6 @@ const LoginPage = () => {
     const navigate = useNavigate();
     const dispatch = useDispatch();
     const { register, handleSubmit, formState: { errors } } = useForm();
-
     useEffect(() => {
         return () => {
             dispatch(clearError());
@@ -19,7 +18,10 @@ const LoginPage = () => {
         dispatch(loginUser(data.email, data.password))
             .then(() => {
                 navigate('/');
-            });
+            })
+            .catch(() => {
+                alert(error)
+            })
     };
 
     return (
